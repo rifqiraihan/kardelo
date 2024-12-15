@@ -1,0 +1,44 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique // No default, required
+  password  String
+  name      String   // No default, required
+  createdAt DateTime @default(now())
+  lists     List[]
+  items     Item[]
+}
+
+model List {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  userId    String   // Updated to match User's `id` type (String)
+  user      User     @relation(fields: [userId], references: [id])
+  items     Item[]
+  status    Status   @default(TODO)
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  listId      Int
+  userId      String   // Updated to match User's `id` type (String)
+  list        List     @relation(fields: [listId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+enum Status {
+  TODO
+  IN_PROGRESS
+  DONE
+}
