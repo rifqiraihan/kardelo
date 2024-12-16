@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'; // Importing icons
-import apiClient from '../api/apiClient'; // Assuming this is set up correctly for your API requests
+import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'; 
+import apiClient from '../api/apiClient';
 import "../app/globals.css";
 
 const RegisterPage = () => {
@@ -10,10 +10,10 @@ const RegisterPage = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [loading, setLoading] = useState(false); // Track loading state
-  const [redirecting, setRedirecting] = useState(false); // Track redirecting state
-  const [snackbarVisible, setSnackbarVisible] = useState(false); // Snackbar visibility state
-  const [showPassword, setShowPassword] = useState(false); // Password visibility state
+  const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const validateForm = () => {

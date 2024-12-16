@@ -6,7 +6,6 @@ import "../app/globals.css";
 
 const HomePage = () => {
   const [showExpiredPopup, setShowExpiredPopup] = useState(false);
-  const [sessionExpired, setSessionExpired] = useState(false);
   const router = useRouter();
 
   const handlePopupClose = () => {
@@ -21,10 +20,8 @@ const HomePage = () => {
       const currentTime = Date.now();
 
       if (!token || !expirationTime || currentTime >= parseInt(expirationTime)) {
-        setSessionExpired(true);
         setShowExpiredPopup(true);
       } else {
-        setSessionExpired(false);
         setShowExpiredPopup(false);
       }
     }, 2000);
