@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { appRouter } from './router'; // Import your appRouter
-import { createContext } from './context'; // Import your createContext function
+import serverless from 'serverless-http'; // Import for serverless function
+import { appRouter } from './router';
+import { createContext } from './context';
 
 const prisma = new PrismaClient();
 const app = express();
@@ -12,17 +13,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Set up TRPC handler with context
+// Set up tRPC handler with context
 app.use(
   '/trpc',
   trpcExpress.createExpressMiddleware({
     router: appRouter,
-    createContext, // Use your createContext function to add user data to the context
+    createContext,
   })
 );
 
-// Start the server
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Start server locally for development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+// Export the app for serverless environments (e.g., Vercel)
+export default serverless(app);
