@@ -11,13 +11,17 @@ import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { MdOutlineEdit } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { CgDetailsMore } from "react-icons/cg";
+import ConfirmationPopupList from './ConfirmationPopupList';
+import DeletePopupList from './DeletePopupList';
+import DeletePopupItem from './DeletePopupItem';
+import ConfirmationPopupItem from './ConfirmationPopupItem';
 
 
 
 const List = () => {
   const [lists, setLists] = useAtom(listsAtom);
-  const [newListName, setNewListName] = useState('');
-  const [newListStatus, setNewListStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO');
+  const [listName, setListName] = useState('');
+  const [listStatus, setListStatus] = useState<'TODO' | 'IN_PROGRESS' | 'DONE'>('TODO');
   const [activeId, setActiveId] = useState<number | null>(null);
   const [newItems, setNewItems] = useState<{ [key: number]: { name: string; description: string } }>({});
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
@@ -25,18 +29,21 @@ const List = () => {
   const [userId, setUserId] = useState<string | null>('');
   const [users, setUsers] = useState<{ [key: string]: string }>({});
   const [activeCreateForm, setActiveCreateForm] = useState<string | null>(null);
-
   const [showCreateConfirmation, setShowCreateConfirmation] = useState(false); 
+
   const [showItemForm, setShowItemForm] = useState<{ [key: number]: boolean }>({});
   const [showItems, setShowItems] = useState<{ [key: number]: boolean }>({});
 
   const [editListId, setEditListId] = useState<{ [key: number]: boolean }>({});
   const [editListName, setEditListName] = useState<{ [key: number]: string }>({});
 
+  const [showDeleteItem, setShowDeleteItem] = useState(false); 
+  const [listId, setListId] = useState('');
+  const [itemId, setItemId] = useState('');
   const [editItemId, setEditItemId] = useState<{ [key: number]: boolean }>({});
   const [editItemName, setEditItemName] = useState<{ [key: number]: string }>({});
   const [editItemDesc, setEditItemDesc] = useState<{ [key: number]: string }>({});
-  const [showItemConfirmation, setShowItemConfirmation] = useState<{ [key: number]: boolean }>({});
+  const [showItemConfirmation, setShowItemConfirmation] = useState<boolean>(false);
 
   const [itemSetting, setItemSetting] = useState<{ [key: number]: boolean }>({});
   const [listSetting, setListSetting] = useState<{ [key: number]: boolean }>({});
@@ -86,18 +93,18 @@ const List = () => {
   };
 
 
-  const handleCreateList = async () => {
-    if (!newListName) return;
+  const onCreateList = async () => {
+    if (!listName) return;
 
     try {
       const response = await apiClient.post('/kardeloApi/createList', {
         userId: userId,
-        name: newListName,
-        status: newListStatus,
+        name: listName,
+        status: listStatus,
       });
 
       setLists((prevLists) => [...prevLists, response.data]);
-      setNewListName('');
+      setListName('');
       setShowCreateConfirmation(false);
       setActiveCreateForm(null)
 
@@ -108,16 +115,19 @@ const List = () => {
   };
 
   const handleShowAdd = (status: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
-    console.log(status)
-    setNewListStatus(status);
+    setListStatus(status);
     setActiveCreateForm(status)
   }
+
+  const handleCreateList = () => {
+   onCreateList()
+  };
 
   const cancelCreateList = () => {
     setShowCreateConfirmation(false);
     setActiveCreateForm(null)
-    setNewListName('');
-    setNewListStatus('TODO');
+    setListName('');
+    setListStatus('TODO');
   };
 
   const deleteList = async (listId: number) => {
@@ -188,7 +198,7 @@ const List = () => {
 
 
 
-  const handleAddItem = async (listId: number) => {
+  const onAddItem = async (listId: number) => {
     const item = newItems[listId];
     if (!item || !item.name) return;
 
@@ -200,7 +210,8 @@ const List = () => {
         description: item.description,
       });
       setNewItems((prev) => ({ ...prev, [listId]: { name: '', description: '' } }));
-      setShowItemConfirmation((prev) => ({ ...prev, [listId]: false }));
+      setShowItemConfirmation(false);
+      setListId('')
       setShowItemForm((prev) => ({ ...prev, [listId]: false }));
       fetchLists();
     } catch (error) {
@@ -208,9 +219,18 @@ const List = () => {
     }
   };
 
+  const handleAddItem = () => {
+    onAddItem(parseInt(listId))
+  };
+
+  const handleCancelAddItem = () => {
+   cancelAddItem(parseInt(listId))
+  };
+
   const cancelAddItem = (listId: number) => {
     setShowItemForm((prev) => ({ ...prev, [listId]: false }));
-    setShowItemConfirmation((prev) => ({ ...prev, [listId]: false }));
+    setShowItemConfirmation(false);
+    setListId('')
     setNewItems((prev) => ({ ...prev, [listId]: { name: '', description: '' } }));
   };
 
@@ -252,7 +272,7 @@ const List = () => {
     }));
   };
 
-  const toggleEditItem = (listId: number, itemId: number, name: string, desc: string) => {
+  const toggleEditItem = (itemId: number, name: string, desc: string) => {
 
     setEditItemId((prev) => ({
       ...prev,
@@ -306,22 +326,38 @@ const List = () => {
   const deleteItem = async (itemId: number) => {
     try {
       await apiClient.post('/kardeloApi/deleteItem', { itemId, userId: userId });
+      setShowDeleteItem(false)
+      setItemId('')
       fetchLists();
     } catch (error) {
       console.error('Error deleting item:', error);
     }
   };
 
+  const handleDeleteItem = () => {
+    deleteItem(parseInt(itemId))
+    setShowDeleteItem(false)
+  };
+
+  const cancelDeleteItem = () => {
+    setShowDeleteItem(false)
+    setItemId('')
+  };
+
   const confirmDeleteList = () => {
     if (listToDelete !== null) {
       deleteList(listToDelete);
       setShowDeleteConfirmation(false);
+      setListName('')
+      setListStatus('DONE')
       setListToDelete(null);
     }
   };
 
   const cancelDelete = () => {
     setShowDeleteConfirmation(false);
+    setListName('')
+    setListStatus('DONE')
     setListToDelete(null);
   };
 
@@ -462,6 +498,8 @@ const List = () => {
                                     e.stopPropagation();
                                     setListToDelete(list.id);
                                     setShowDeleteConfirmation(true);
+                                    setListName(list.name)
+                                    setListStatus(status as 'TODO' || 'IN_PROGRESS' || 'DONE')
                                   }}
                                   className="w-full p-2 text-lg flex flex-row gap-2 text-red-500 hover:text-red-700 items-center mt-2"
                                 >
@@ -544,30 +582,6 @@ const List = () => {
                                 </div>
                             </button>
                         </div>
-                       {showItemConfirmation[list.id] && (
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-                          <div className="bg-white p-6 rounded shadow-lg">
-                            <h2 className="text-lg font-bold">Confirm Add Reply</h2>
-                            <p className="mt-2">
-                              Are you sure you want to add this item to <b>{list.name}</b>?
-                            </p>
-                            <div className="flex gap-4 mt-4">
-                              <button
-                                onClick={() => handleAddItem(list.id)}
-                                className="bg-green-500 text-white p-2 rounded"
-                              >
-                                Yes, Add
-                              </button>
-                              <button
-                                onClick={() => cancelAddItem(list.id)}
-                                className="bg-gray-300 text-black p-2 rounded"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                       </div>
 
                     <div className='mt-3'>
@@ -605,8 +619,10 @@ const List = () => {
                           />
                           <div className="flex gap-2">
                             <button
-                              onClick={() =>
-                                setShowItemConfirmation((prev) => ({ ...prev, [list.id]: true }))
+                              onClick={() =>{
+                                setShowItemConfirmation(true)
+                                setListId(list.id)
+                              }
                               }
                               className="bg-green-500 hover:bg-green-700 text-sm font-bold shadow-lg text-white uppercase p-2 rounded mr-2 w-1/2"
                             >
@@ -629,6 +645,7 @@ const List = () => {
                         </div>
                         </div>
                       )}
+
                     {showItems[list.id] && (
                       <div className={`bg-gray-100 p-2 rounded-lg ${showItems[list.id] && "p-4"}`}>
 
@@ -657,7 +674,7 @@ const List = () => {
                                           ...prev,
                                           [item.id]: !prev[item.id],
                                         }));
-                                        toggleEditItem(list.id, item.id, item.name, item.description)
+                                        toggleEditItem(item.id, item.name, item.description)
                                       }}
                                       className="w-full p-2 text-lg flex flex-row gap-2 text-gray-500 hover:text-gray-700 items-center"
                                     >
@@ -671,7 +688,8 @@ const List = () => {
                                           [item.id]: !prev[item.id],
                                         }));
                                         e.stopPropagation();
-                                        deleteItem(item.id)
+                                        setItemId(item.id)
+                                        setShowDeleteItem(true)
                                       }}
                                       className="w-full p-2 text-lg flex flex-row gap-2 text-red-500 hover:text-red-700 items-center mt-2"
                                     >
@@ -696,7 +714,6 @@ const List = () => {
                           </div>
 
 
-                        
 
                          {editItemId[item.id] ? (
                           <div className="mb-4 mt-2 flex flex-col gap-2">
@@ -779,8 +796,8 @@ const List = () => {
                   <div className="mb-4 flex flex-col gap-3 w-full bg-white rounded-lg p-4">
                     <input
                       type="text"
-                      value={newListName}
-                      onChange={(e) => setNewListName(e.target.value)}
+                      value={listName}
+                      onChange={(e) => setListName(e.target.value)}
                       placeholder="New Task Title"
                       className="p-3 border-2 rounded-lg my-3"
                     />
@@ -819,53 +836,34 @@ const List = () => {
         </DragOverlay>
       </DndContext>
 
-      {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold">Are you sure you want to delete this list?</h2>
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={confirmDeleteList}
-                className="bg-red-500 text-white p-2 rounded"
-              >
-                Yes, Delete
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="bg-gray-300 text-black p-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-{showCreateConfirmation && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold">Confirm Task Creation</h2>
-            <p className="mt-2">
-              Are you sure you want to create a new list named <b>{newListName}</b> with the status{' '}
-              <b>{newListStatus}</b>?
-            </p>
-            <div className="flex gap-4 mt-4">
-              <button
-                onClick={handleCreateList}
-                className="bg-green-500 text-white p-2 rounded"
-              >
-                Yes, Create
-              </button>
-              <button
-                onClick={cancelCreateList}
-                className="bg-gray-300 text-black p-2 rounded"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeletePopupItem
+        open={showDeleteItem}
+        onSave={handleDeleteItem}
+        onCancel={cancelDeleteItem}
+      />
+
+      <DeletePopupList
+       open={showDeleteConfirmation}
+       name={listName}
+       status={listStatus}
+       onSave={confirmDeleteList}
+       onCancel={cancelDelete}
+      />
+
+      <ConfirmationPopupItem
+        open={showItemConfirmation}
+        onSave={handleAddItem}
+        onCancel={handleCancelAddItem}
+      />
+
+      <ConfirmationPopupList
+        open={showCreateConfirmation}
+        name={listName}
+        status={listStatus}
+        onSave={handleCreateList}
+        onCancel={cancelCreateList}
+      />
 
       
     </div>
