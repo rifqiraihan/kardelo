@@ -27,7 +27,7 @@ const LoginPage = () => {
     setSnackbarVisible(false);
   
     try {
-      const response = await apiClient.post('/trpc/login', { username, password });
+      const response = await apiClient.post('/kardeloApi/login', { username, password });
   
       if (response.data?.result?.data?.error) {
         setError(response.data.result.data.error);

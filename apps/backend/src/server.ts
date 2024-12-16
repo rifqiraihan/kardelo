@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Set up tRPC handler with context
 app.use(
-  '/trpc',
+  '/kardeloApi',
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,

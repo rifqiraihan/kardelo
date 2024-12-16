@@ -63,7 +63,7 @@ const List = () => {
 
   const fetchLists = async () => {
     try {
-      const response = await apiClient.get('/trpc/getLists');
+      const response = await apiClient.get('/kardeloApi/getLists');
       const fetchedLists = response.data.result.data;
       setLists(fetchedLists);
     } catch (error) {
@@ -73,7 +73,7 @@ const List = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await apiClient.get('/trpc/getUsers');
+      const response = await apiClient.get('/kardeloApi/getUsers');
       const fetchedUsers = response.data.result.data;
       const usersMap = fetchedUsers.reduce((acc: { [key: string]: string }, user: any) => {
         acc[user.id] = user.name;
@@ -90,7 +90,7 @@ const List = () => {
     if (!newListName) return;
 
     try {
-      const response = await apiClient.post('/trpc/createList', {
+      const response = await apiClient.post('/kardeloApi/createList', {
         userId: userId,
         name: newListName,
         status: newListStatus,
@@ -122,7 +122,7 @@ const List = () => {
 
   const deleteList = async (listId: number) => {
     try {
-      await apiClient.post('/trpc/deleteList', { listId, userId: userId });
+      await apiClient.post('/kardeloApi/deleteList', { listId, userId: userId });
       setLists((prevLists) => prevLists.filter((list) => list.id !== listId));
       fetchLists();
     } catch (error) {
@@ -132,7 +132,7 @@ const List = () => {
 
   const updateListStatus = async (listId: number, status: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
     try {
-      await apiClient.post('/trpc/moveListStatus', {
+      await apiClient.post('/kardeloApi/moveListStatus', {
         listId,
         userId: userId,
         status,
@@ -145,7 +145,7 @@ const List = () => {
   const handleEditList = async (listId: number) => {
     console.log('yea)')
     try {
-      await apiClient.post('/trpc/editList', { listId, name: editListName[listId], userId: userId });
+      await apiClient.post('/kardeloApi/editList', { listId, name: editListName[listId], userId: userId });
       fetchLists();
       setEditListId((prev) => ({
         ...prev,
@@ -164,7 +164,7 @@ const List = () => {
 
   const handleEditItem = async (listId: number, itemId: number) => {
     try {
-      await apiClient.post('/trpc/editItem', { listId, itemId, name: editItemName[itemId], description: editItemDesc[itemId], userId: userId });
+      await apiClient.post('/kardeloApi/editItem', { listId, itemId, name: editItemName[itemId], description: editItemDesc[itemId], userId: userId });
       fetchLists();
 
       setEditItemId((prev) => ({
@@ -193,7 +193,7 @@ const List = () => {
     if (!item || !item.name) return;
 
     try {
-      const response = await apiClient.post('/trpc/addItem', {
+      const response = await apiClient.post('/kardeloApi/addItem', {
         listId,
         userId: userId,
         name: item.name,
@@ -305,7 +305,7 @@ const List = () => {
 
   const deleteItem = async (itemId: number) => {
     try {
-      await apiClient.post('/trpc/deleteItem', { itemId, userId: userId });
+      await apiClient.post('/kardeloApi/deleteItem', { itemId, userId: userId });
       fetchLists();
     } catch (error) {
       console.error('Error deleting item:', error);

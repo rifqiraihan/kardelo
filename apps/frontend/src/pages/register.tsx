@@ -44,7 +44,7 @@ const RegisterPage = () => {
     setSnackbarVisible(false);
 
     try {
-      const response = await apiClient.post('/trpc/register', { username, password, name });
+      const response = await apiClient.post('/kardeloApi/register', { username, password, name });
 
       if (response.data?.result?.data?.error) {
         setError(response.data.result.data.error);
