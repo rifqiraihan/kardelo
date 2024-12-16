@@ -14,7 +14,6 @@ import { CgDetailsMore } from "react-icons/cg";
 
 
 
-
 const List = () => {
   const [lists, setLists] = useAtom(listsAtom);
   const [newListName, setNewListName] = useState('');
@@ -35,7 +34,6 @@ const List = () => {
   const [editListName, setEditListName] = useState<{ [key: number]: string }>({});
 
   const [editItemId, setEditItemId] = useState<{ [key: number]: boolean }>({});
-  const [editItemListId, setEditItemListId] = useState<{ [key: number]: boolean }>({});
   const [editItemName, setEditItemName] = useState<{ [key: number]: string }>({});
   const [editItemDesc, setEditItemDesc] = useState<{ [key: number]: string }>({});
   const [showItemConfirmation, setShowItemConfirmation] = useState<{ [key: number]: boolean }>({});
@@ -44,35 +42,20 @@ const List = () => {
   const [listSetting, setListSetting] = useState<{ [key: number]: boolean }>({});
 
 
-
-
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const storedUserName = localStorage.getItem('userId');
-  //     setUserId(storedUserName);
-  //   }
-  //   fetchLists();
-  //   fetchUsers();
-  // }, []);
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Check session validity
       const token = localStorage.getItem('authToken');
       const expirationTime = localStorage.getItem('authExpirationTime');
       const currentTime = Date.now();
 
       if (!token || !expirationTime || currentTime >= parseInt(expirationTime)) {
-        // If session has expired, don't fetch any data
         console.log('Session expired, skipping data fetch');
-        return; // Skip fetching if session expired
+        return;
       }
 
-      // Session is valid, proceed with fetching
       const storedUserName = localStorage.getItem('userId');
       setUserId(storedUserName);
       
-      // Fetch lists and users only if session is valid
       fetchLists();
       fetchUsers();
     }
@@ -184,11 +167,6 @@ const List = () => {
       await apiClient.post('/trpc/editItem', { listId, itemId, name: editItemName[itemId], description: editItemDesc[itemId], userId: userId });
       fetchLists();
 
-      setEditItemListId((prev) => ({
-        ...prev,
-        [listId]: !prev[listId],
-      }));
-
       setEditItemId((prev) => ({
         ...prev,
         [itemId]: !prev[itemId] ,
@@ -221,7 +199,6 @@ const List = () => {
         name: item.name,
         description: item.description,
       });
-      console.log('Item added:', response.data);
       setNewItems((prev) => ({ ...prev, [listId]: { name: '', description: '' } }));
       setShowItemConfirmation((prev) => ({ ...prev, [listId]: false }));
       setShowItemForm((prev) => ({ ...prev, [listId]: false }));
@@ -276,10 +253,6 @@ const List = () => {
   };
 
   const toggleEditItem = (listId: number, itemId: number, name: string, desc: string) => {
-    setEditItemListId((prev) => ({
-      ...prev,
-      [listId]: !prev[listId],
-    }));
 
     setEditItemId((prev) => ({
       ...prev,
@@ -312,10 +285,6 @@ const List = () => {
   };
 
   const closeEditItem = (listId: number, itemId: number,) => {
-    setEditItemListId((prev) => ({
-      ...prev,
-      [listId]: !prev[listId],
-    }));
 
     setEditItemId((prev) => ({
       ...prev,
@@ -406,10 +375,17 @@ const List = () => {
   };
 
   const getInitials = (fullName: string) => {
-    const names = fullName?.split(' ');
-    const initials = names?.map((n) => n[0]).join('');
-    return initials?.toUpperCase();
+    if (!fullName) return '';
+  
+    const names = fullName.trim().split(' ');
+    
+    const firstInitial = names[0]?.[0] || '';
+    
+    const lastInitial = names.length > 1 ? names[names.length - 1][0] : '';
+    
+    return `${firstInitial}${lastInitial}`.toUpperCase();
   };
+  
 
   const sensors = [
     useSensor(PointerSensor, {
@@ -475,7 +451,7 @@ const List = () => {
                                   className="w-full p-2 text-lg flex flex-row gap-2 text-gray-500 hover:text-gray-700 items-center"
                                 >
                                   <MdOutlineEdit className=" w-6 h-6" />
-                                  Edit List
+                                  Edit Task
                                 </button>
                                 <button
                                   onClick={(e) => {
@@ -490,7 +466,7 @@ const List = () => {
                                   className="w-full p-2 text-lg flex flex-row gap-2 text-red-500 hover:text-red-700 items-center mt-2"
                                 >
                                   <IoTrashOutline className=" w-6 h-6" />
-                                  Delete List
+                                  Delete Task
                                 </button>
                               </div>
                             )}
@@ -520,7 +496,7 @@ const List = () => {
                                   [list.id]: e.target.value,
                                 }))
                               }
-                              placeholder="Item Name"
+                              placeholder="Task Title"
                               className="p-3 border-2 rounded-lg w-full"
                             />
                             <div className="flex gap-2 mt-2">
@@ -533,7 +509,7 @@ const List = () => {
                             </button>
                             <button
                               onClick={() => closeEditList(list.id)}
-                              className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold uppercase p-2 rounded-lg w-1/2"
+                              className="bg-white hover:bg-gray-100 text-black text-sm font-bold uppercase border-gray-400 border-2 p-2 rounded-lg w-1/2"
                             >
                               Cancel
                             </button>
@@ -548,7 +524,10 @@ const List = () => {
 
                         <div className='flex gap-4 items-center'>
                           <button
-                            onClick={() => toggleItemForm(list.id)}
+                            onClick={() => {
+                              toggleItemForm(list.id)
+                              // toggleItems(list.id)
+                            }}
                             className="text-blue-500 underline "
                           >
                               <MdAddCircleOutline className="text-gray-500 hover:text-gray-700 w-8 h-8" />
@@ -564,66 +543,11 @@ const List = () => {
                                   {list.items?.length}
                                 </div>
                             </button>
-
-
                         </div>
-
-                     
-
-                      {showItemForm[list.id] && (
-                        <div className="mb-4 mt-2 flex flex-col gap-2">
-                          <input
-                            type="text"
-                            value={newItems[list.id]?.name || ''}
-                            onChange={(e) =>
-                              setNewItems((prev) => ({
-                                ...prev,
-                                [list.id]: {
-                                  ...prev[list.id],
-                                  name: e.target.value,
-                                },
-                              }))
-                            }
-                            placeholder="Item Name"
-                            className="p-2 border rounded"
-                          />
-                          <textarea
-                            value={newItems[list.id]?.description || ''}
-                            onChange={(e) =>
-                              setNewItems((prev) => ({
-                                ...prev,
-                                [list.id]: {
-                                  ...prev[list.id],
-                                  description: e.target.value,
-                                },
-                              }))
-                            }
-                            placeholder="Item Description"
-                            className="p-2 border rounded"
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                setShowItemConfirmation((prev) => ({ ...prev, [list.id]: true }))
-                              }
-                              className="border-green-500 border-2 text-green-500 p-2 rounded mr-2 w-1/2"
-                            >
-                              Submit
-                            </button>
-                            <button
-                              onClick={() => cancelAddItem(list.id)}
-                              className="border-gray-300 border-2 text-black p-2 rounded w-1/2"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-
-                        </div>
-                      )}
                        {showItemConfirmation[list.id] && (
                         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
                           <div className="bg-white p-6 rounded shadow-lg">
-                            <h2 className="text-lg font-bold">Confirm Add Item</h2>
+                            <h2 className="text-lg font-bold">Confirm Add Reply</h2>
                             <p className="mt-2">
                               Are you sure you want to add this item to <b>{list.name}</b>?
                             </p>
@@ -647,8 +571,67 @@ const List = () => {
                       </div>
 
                     <div className='mt-3'>
+                    {showItemForm[list.id] && (
+                    <div className={`p-4 mb-4 bg-white rounded-lg shadow-lg border-blue-500 border-2 `}>
+                        <div className="mb-4 mt-2 flex flex-col gap-2">
+                          <input
+                            type="text"
+                            value={newItems[list.id]?.name || ''}
+                            onChange={(e) =>
+                              setNewItems((prev) => ({
+                                ...prev,
+                                [list.id]: {
+                                  ...prev[list.id],
+                                  name: e.target.value,
+                                },
+                              }))
+                            }
+                            placeholder="Reply Title"
+                            className="p-2 border rounded"
+                          />
+                          <textarea
+                            value={newItems[list.id]?.description || ''}
+                            onChange={(e) =>
+                              setNewItems((prev) => ({
+                                ...prev,
+                                [list.id]: {
+                                  ...prev[list.id],
+                                  description: e.target.value,
+                                },
+                              }))
+                            }
+                            placeholder="Message . . ."
+                            className="p-2 border rounded"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                setShowItemConfirmation((prev) => ({ ...prev, [list.id]: true }))
+                              }
+                              className="bg-green-500 hover:bg-green-700 text-sm font-bold shadow-lg text-white uppercase p-2 rounded mr-2 w-1/2"
+                            >
+                              Submit
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowItems((prev) => ({
+                                  ...prev,
+                                  [list.id]: false,
+                                }));
+                                cancelAddItem(list.id)
+                              }}
+                              className="bg-white hover:bg-gray-100 text-gray-500 text-sm font-bold shadow-lg uppercase border-2 border-gray-400 p-2 rounded w-1/2"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+
+                        </div>
+                        </div>
+                      )}
                     {showItems[list.id] && (
-                      <div className="bg-gray-100 p-4 rounded-lg">
+                      <div className={`bg-gray-100 p-2 rounded-lg ${showItems[list.id] && "p-4"}`}>
+
                         {list.items?.map((item: any) => (
                          <div key={item.id} className={`p-4 border mb-4 bg-white rounded-lg shadow-lg ${item.userId === userId && 'border-blue-500 border-2'} `}>
 
@@ -679,7 +662,7 @@ const List = () => {
                                       className="w-full p-2 text-lg flex flex-row gap-2 text-gray-500 hover:text-gray-700 items-center"
                                     >
                                       <MdOutlineEdit className=" w-6 h-6" />
-                                      Edit Item
+                                      Edit Reply
                                     </button>
                                     <button
                                       onClick={(e) => {
@@ -693,7 +676,7 @@ const List = () => {
                                       className="w-full p-2 text-lg flex flex-row gap-2 text-red-500 hover:text-red-700 items-center mt-2"
                                     >
                                       <IoTrashOutline className=" w-6 h-6" />
-                                      Delete Item
+                                      Delete Reply
                                     </button>
                                   </div>
                                 )}
@@ -726,7 +709,7 @@ const List = () => {
                                 [item.id]: e.target.value,
                               }))
                             }
-                            placeholder="Item Name"
+                            placeholder="Reply Title"
                             className="p-3 border-2 rounded-lg"
                           />
                           <textarea
@@ -737,7 +720,7 @@ const List = () => {
                                 [item.id]: e.target.value,
                               }))
                             }
-                            placeholder="Item Description"
+                            placeholder="Message . . ."
                             className="p-3 border-2 rounded-lg"
                           />
                           <div className="flex gap-2">
@@ -751,7 +734,7 @@ const List = () => {
                             </button>
                             <button
                               onClick={() => closeEditItem(list.id, item.id)}
-                              className="bg-red-500 hover:bg-red-700 text-sm text-white font-bold uppercase p-2 rounded-lg w-1/2"
+                              className="bg-white hover:bg-gray-100 text-gray-500 text-sm font-bold border-gray-400 border-2 shadow-lg uppercase p-2 rounded-lg w-1/2"
                             >
                               Cancel
                             </button>
@@ -766,30 +749,6 @@ const List = () => {
 
                          )}
 
-                         
-                       
-                         {/* {item.userId === userId && (
-                          <div className='flex gap-3 items-center'>
-                            <button
-                             onClick={() => {
-                               
-                               toggleEditItem(list.id, item.id, item.name, item.description)
-                             }}
-                             className=" text-sm underline mt-4"
-                           >
-                             <MdOutlineEdit className="text-gray-500 hover:text-gray-700 w-6 h-6" />
-                           </button>
-                           <button
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               deleteItem(item.id);
-                             }}
-                             className="text-red-500 text-sm underline mt-4"
-                           >
-                             <IoTrashOutline className="text-red-500 hover:text-red-700 w-6 h-6" />
-                           </button>
-                           </div>
-                         )} */}
                        </div>
                         ))}
                       </div>
@@ -814,16 +773,16 @@ const List = () => {
                     className=" text-blue-500 font-bold hover:text-blue-700 p-4 mb-4 flex justify-center justify-self-center flex-row items-center gap-1"
                   >
                      <IoMdAdd className="w-6 h-6"/>
-                    <h2>Add New List</h2>
+                    <h2>Add New Task</h2>
                   </button>
                 ) : (
-                  <div className="mb-4 flex flex-col gap-3 w-full">
+                  <div className="mb-4 flex flex-col gap-3 w-full bg-white rounded-lg p-4">
                     <input
                       type="text"
                       value={newListName}
                       onChange={(e) => setNewListName(e.target.value)}
-                      placeholder="New List Name"
-                      className="p-3 border-2 rounded-lg"
+                      placeholder="New Task Title"
+                      className="p-3 border-2 rounded-lg my-3"
                     />
                     <div className='flex flex-col'>
                       <div className='flex flex-col gap-3'>
@@ -837,7 +796,7 @@ const List = () => {
                         </button>
                         <button
                           onClick={cancelCreateList}
-                          className="bg-red-500 hover:bg-red-700 text-sm  text-white font-bold uppercase p-2 rounded-lg w-1/2"
+                          className="bg-white hover:bg-gray-100 text-gray-500 text-sm font-bold border-gray-400 border-2 shadow-lg uppercase p-2 rounded-lg w-1/2"
                         >
                           Cancel
                         </button>
@@ -885,7 +844,7 @@ const List = () => {
 {showCreateConfirmation && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold">Confirm List Creation</h2>
+            <h2 className="text-lg font-bold">Confirm Task Creation</h2>
             <p className="mt-2">
               Are you sure you want to create a new list named <b>{newListName}</b> with the status{' '}
               <b>{newListStatus}</b>?

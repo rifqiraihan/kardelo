@@ -24,7 +24,9 @@ const SplashScreen = () => {
   return (
     <div className="bg-blue-500 h-screen flex justify-center items-center text-white font-bold">
       <div className="flex flex-col justify-center items-center">
-        <h1 className="text-4xl mb-4">Kardello</h1>
+      <div style={{width:500, height:500}}>
+        <img src={'/assets/kardello-blue.png'} className='w-full h-full' alt='Logo'/>
+        </div>
         <div className="spinner"></div>
       </div>
     </div>

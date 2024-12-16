@@ -26,10 +26,18 @@ const Headers = () => {
 
 
   const getInitials = (fullName: string) => {
-    const names = fullName.split(' ');
-    const initials = names.map((n) => n[0]).join('');
-    return initials.toUpperCase();
+    if (!fullName) return '';
+  
+    const names = fullName.trim().split(' ');
+    
+    const firstInitial = names[0]?.[0] || '';
+    
+    const lastInitial = names.length > 1 ? names[names.length - 1][0] : '';
+    
+    return `${firstInitial}${lastInitial}`.toUpperCase();
   };
+  
+  
 
   React.useEffect(() => {
     // Only access localStorage in the browser
@@ -42,7 +50,10 @@ const Headers = () => {
   return (
     <header className="bg-blue-500 p-4 text-white">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Kardello</h1>
+        
+      <div style={{width:100, height:100}}>
+        <img src={'/assets/kardello-blue.png'} className='w-full h-full' alt='Logo'/>
+        </div>
         
         {userName ? (
           <div className="relative">
