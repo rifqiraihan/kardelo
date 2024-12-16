@@ -38,7 +38,7 @@ const RegisterPage = () => {
   const handleRegister = async () => {
     if (!validateForm()) return;
 
-    setLoading(true); // Start loading state
+    setLoading(true);
     setError('');
     setSuccessMessage('');
     setSnackbarVisible(false);
@@ -55,18 +55,17 @@ const RegisterPage = () => {
       setSuccessMessage('Registration successful! Redirecting...');
       setSnackbarVisible(true);
 
-      // Set redirecting state
       setRedirecting(true);
 
       setTimeout(() => {
         router.push('/login');
-      }, 2000); // Delay to show success message
+      }, 2000);
     } catch (error) {
       setError('An error occurred during registration. Please try again.');
       setSnackbarVisible(true);
       console.error('Registration failed:', error);
     } finally {
-      setLoading(false); // Stop loading after the request finishes
+      setLoading(false); 
     }
   };
 
@@ -83,7 +82,7 @@ const RegisterPage = () => {
             onChange={(e) => setName(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg"
             placeholder="Full Name"
-            disabled={loading || redirecting} // Disable during loading or redirecting
+            disabled={loading || redirecting} 
           />
         </div>
         <div className="mt-4">
@@ -95,23 +94,23 @@ const RegisterPage = () => {
             onChange={(e) => setUsername(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg"
             placeholder="Username"
-            disabled={loading || redirecting} // Disable during loading or redirecting
+            disabled={loading || redirecting}
           />
         </div>
         <div className="mt-4 relative">
           <label htmlFor="password" className="block mb-2 font-bold text-gray-700">Password</label>
           <input
             id="password"
-            type={showPassword ? 'text' : 'password'} // Toggle input type based on state
+            type={showPassword ? 'text' : 'password'} 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg"
             placeholder="Password"
-            disabled={loading || redirecting} // Disable during loading or redirecting
+            disabled={loading || redirecting}
           />
           <button
             type="button"
-            onClick={() => setShowPassword(prev => !prev)} // Toggle password visibility
+            onClick={() => setShowPassword(prev => !prev)}
             className="absolute right-3 top-1/2 transform -translate-y-1/5 text-gray-500"
           >
             {showPassword ? <IoEyeOffOutline className="h-8 w-8" /> : <IoEyeOutline className="h-8 w-8" />}
@@ -120,7 +119,7 @@ const RegisterPage = () => {
         <button
           onClick={handleRegister}
           className={`w-full p-3 rounded-lg mt-6 ${loading || redirecting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white transition duration-200`}
-          disabled={loading || redirecting} // Disable button during loading or redirecting
+          disabled={loading || redirecting}
         >
           {loading || redirecting ? (
             <span>{redirecting ? 'Redirecting...' : 'Registering...'}</span>

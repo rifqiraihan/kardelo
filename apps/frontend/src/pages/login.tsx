@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import apiClient from '../api/apiClient';
 import "../app/globals.css";
 import { IoEyeOutline } from "react-icons/io5";
 import { IoEyeOffOutline } from "react-icons/io5";
-import Image from 'next/image';
-
 
 
 
@@ -138,9 +136,6 @@ const LoginPage = () => {
         <div style={{width:500, height:500}}>
         <img src={'/assets/kardello-blue.png'} className='w-full h-full' alt='Logo'/>
         </div>
-            {/* <h1 className='text-4xl mb-2'>Kardello</h1>
-            <h1 className='text-xl max-w-lg break-words'>Where Ideas Take Shape and Goals Take Flight.</h1>
-            <h1 className='text-xl max-w-lg break-words'>Trello Inspired</h1> */}
 
           </div>
           
