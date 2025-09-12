@@ -60,7 +60,51 @@ export const appRouter = t.router({
     }),
 
   // User Login
-  login: t.procedure
+  // login: t.procedure
+  // .input(
+  //   z.object({
+  //     username: z.string(),
+  //     password: z.string(),
+  //   })
+  // )
+  // .mutation(async ({ input }) => {
+  //   try {
+  //     // Find the user by username
+  //     const user = await prisma.user.findUnique({
+  //       where: { username: input.username },
+  //     });
+
+  //     if (!user) {
+  //       throw new Error('Invalid username or password');
+  //     }
+
+  //     // Verify the password with bcrypt
+  //     const isPasswordValid = await bcrypt.compare(input.password, user.password);
+  //     if (!isPasswordValid) {
+  //       throw new Error('Invalid username or password');
+  //     }
+
+  //     // Generate a JWT token with an expiration of 1 hour
+  //     const expirationTime = Date.now() + 3600 * 1000; // Current time + 1 hour in milliseconds
+  //     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  //     // const expirationTime = Date.now() + 3000; // Current time + 3 seconds in milliseconds
+  //     // const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '3s' });
+
+  //     // Return the token, expiration time, and user data (excluding password)
+  //     const { password, ...userWithoutPassword } = user;
+  //     return { 
+  //       message: 'Login successful', 
+  //       token, 
+  //       expirationTime,  // Send expiration time to frontend
+  //       user: userWithoutPassword 
+  //     };
+  //   } catch (error) {
+  //     return handleError(error);
+  //   }
+  // }),
+
+  // User Login
+login: t.procedure
   .input(
     z.object({
       username: z.string(),
@@ -68,38 +112,55 @@ export const appRouter = t.router({
     })
   )
   .mutation(async ({ input }) => {
+    // A unique ID to track this specific request in the logs
+    const logId = `[${new Date().toISOString()}] [user: ${input.username}]`;
+    console.log(`${logId} Login mutation started.`);
+
     try {
-      // Find the user by username
+      console.log(`${logId} Searching for user in database...`);
+      // --- DATABASE CALL ---
       const user = await prisma.user.findUnique({
         where: { username: input.username },
       });
+      console.log(`${logId} Database query finished. User found: ${!!user}`);
 
       if (!user) {
+        console.log(`${logId} Authentication failed: User not found.`);
         throw new Error('Invalid username or password');
       }
 
-      // Verify the password with bcrypt
+      console.log(`${logId} Comparing password hash...`);
+      // --- BCRYPT CALL ---
       const isPasswordValid = await bcrypt.compare(input.password, user.password);
+      console.log(`${logId} Password comparison finished. Match: ${isPasswordValid}`);
+
       if (!isPasswordValid) {
+        console.log(`${logId} Authentication failed: Invalid password.`);
         throw new Error('Invalid username or password');
       }
 
-      // Generate a JWT token with an expiration of 1 hour
-      const expirationTime = Date.now() + 3600 * 1000; // Current time + 1 hour in milliseconds
+      console.log(`${logId} Generating JWT token...`);
+      // --- JWT GENERATION ---
+      const expirationTime = Date.now() + 3600 * 1000;
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
-      // const expirationTime = Date.now() + 3000; // Current time + 3 seconds in milliseconds
-      // const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '3s' });
-
-      // Return the token, expiration time, and user data (excluding password)
+      
       const { password, ...userWithoutPassword } = user;
+      
+      console.log(`${logId} Login successful. Returning token and user data.`);
       return { 
         message: 'Login successful', 
         token, 
-        expirationTime,  // Send expiration time to frontend
+        expirationTime,
         user: userWithoutPassword 
       };
+
     } catch (error) {
-      return handleError(error);
+      // Log the specific error for this request
+      console.error(`${logId} An error occurred in the login mutation:`, error);
+      // It's better to re-throw or use tRPC's error formatting
+      // instead of your custom handleError if it hides the error.
+      // For now, let's make sure the error is visible.
+      throw new Error(error instanceof Error ? error.message : 'An unknown error occurred');
     }
   }),
 
